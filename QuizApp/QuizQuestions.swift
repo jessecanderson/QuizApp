@@ -8,6 +8,12 @@
 
 import Foundation
 
+enum SoundState {
+    case start
+    case wrongAnswer
+    case rightAnswer
+}
+
 struct TriviaDetails {
     
     let questionNumber: Int

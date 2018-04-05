@@ -23,8 +23,20 @@ class ViewController: UIViewController {
     
     // Using this array of buttons to change the colors and text colors later
     @objc var buttons: [UIButton]? = []
-    @objc var gameSound: SystemSoundID = 0
     
+    // Game Sounds System ID's. Need to look into this more.
+    @objc var gameSound: SystemSoundID = 0
+    var wrongSound: SystemSoundID = 0
+    var rightSound: SystemSoundID = 0
+    // Single place to add sound file names, if they needed to be changed or updated
+    let soundEffectNames: [String] = ["GameSound", "RightAnswer", "WrongAnswer"]
+    // value to change if audio plays or not
+    var muteIsOn: Bool = false
+    
+    // Timer variables and label
+    var swiftTimer = Timer()
+    var swiftCounter = 0
+    @IBOutlet weak var timerLabel: UILabel!
     var selectedQuestion: TriviaDetails?
     
     @IBOutlet weak var questionField: UILabel!
@@ -33,7 +45,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var button3: UIButton!
     @IBOutlet weak var button4: UIButton!
     @IBOutlet weak var playAgainButton: UIButton!
-
+    @IBOutlet weak var muteButton: UIButton!
+    
     
     
 
@@ -44,10 +57,11 @@ class ViewController: UIViewController {
         buttons = [button1, button2, button3, button4]
         
         // Load game start sound
-        loadGameStartSound()
+        // loadGameStartSound()
+        loadGameSounds()
         
         // Start game
-        playGameStartSound()
+        playGameSound(SoundState.start, isMuteOn: muteIsOn)
         displayQuestion()
     }
 
@@ -57,10 +71,10 @@ class ViewController: UIViewController {
     }
     
     @objc func displayQuestion() {
-        
+        timerLabel.isHidden = false
         // Select a random number
         selectRandomNumber()
-        
+        swiftCounter = 15
         // Pick a question from the arry and assign it to selectedQuestion
         selectedQuestion = triviaQuestions.questionsList[indexOfSelectedQuestion]
         
@@ -80,6 +94,10 @@ class ViewController: UIViewController {
                 }
                 
                 questionField.text = selectedQuestion.questionText
+                timerLabel.text = String(swiftCounter)
+                
+                //swiftTimer = Timer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+                swiftTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
                 
                 // How many buttons do we need to assign? This can be expanded if needed, and working on moving the buttons to make it look nicer.
                 switch selectedQuestion.numberOfOptions {
@@ -117,12 +135,12 @@ class ViewController: UIViewController {
     @IBAction func checkAnswer(_ sender: UIButton) {
         // Increment the questions asked counter
         questionsAsked += 1
-        
+
         // let selectedQuestion = triviaQuestions.questionsList[indexOfSelectedQuestion]
-        
+
         if let selectedQuestion = selectedQuestion {
             let correctAnswer = (selectedQuestion.answer, sender.tag)
-            
+
             switch correctAnswer {
             case (0,0):
                 setCorrectAnswer(listOfButtons: buttons, correct: button1)
@@ -135,16 +153,17 @@ class ViewController: UIViewController {
             default:
                 setWrongAnswer(listOfButtons: buttons, questionIndex: selectedQuestion.answer)
             }
-            
+
             questionsNumberAsked.append(selectedQuestion.questionNumber)
             print(questionsNumberAsked)
             loadNextRoundWithDelay(seconds: 2)
-            
+
         }
-        
     }
     
     @objc func nextRound() {
+        timerLabel.isHidden = true
+        stopTimer()
         if questionsAsked == questionsPerRound {
             // Game is over
             displayScore()
@@ -157,14 +176,22 @@ class ViewController: UIViewController {
     @IBAction func playAgain() {
         // Show the answer buttons
         unhideButtons()
-
         questionsAsked = 0
         correctQuestions = 0
         questionsNumberAsked = []
         nextRound()
     }
     
-
+    @IBAction func muteAudio(_ sender: Any) {
+        if muteIsOn == false {
+            muteIsOn = true
+            muteButton.setImage(#imageLiteral(resourceName: "Unmute"), for: .normal)
+        } else {
+            muteIsOn = false
+            muteButton.setImage(#imageLiteral(resourceName: "Mute"), for: .normal)
+        }
+    }
+    
     
     // MARK: Helper Methods
     
@@ -193,12 +220,68 @@ class ViewController: UIViewController {
         AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
     }
     
-    @objc func playGameStartSound() {
-        AudioServicesPlaySystemSound(gameSound)
+    func loadGameSounds() {
+        for fileName in soundEffectNames {
+            let pathToSoundFile = Bundle.main.path(forResource: fileName, ofType: "wav")
+            if let pathToSoundFile = pathToSoundFile {
+                switch fileName {
+                case "GameSound":
+                    let soundURL = URL(fileURLWithPath: pathToSoundFile)
+                    AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
+                case "RightAnswer":
+                    let soundURL = URL(fileURLWithPath: pathToSoundFile)
+                    AudioServicesCreateSystemSoundID(soundURL as CFURL, &rightSound)
+                case "WrongAnswer":
+                    let soundURL = URL(fileURLWithPath: pathToSoundFile)
+                    AudioServicesCreateSystemSoundID(soundURL as CFURL, &wrongSound)
+                default:
+                    print("Something went wrong loading the sounds.")
+                    break
+                }
+                
+            }
+        }
+    }
+    
+    func playGameSound(_ state: SoundState, isMuteOn: Bool) {
+        if isMuteOn == false {
+            switch state {
+            case .start:
+                AudioServicesPlaySystemSound(gameSound)
+            case .rightAnswer:
+                AudioServicesPlaySystemSound(rightSound)
+            case .wrongAnswer:
+                AudioServicesPlaySystemSound(wrongSound)
+            }
+        } else {
+            print("Someone turned on mute, no audio")
+        }
     }
     
     
     // Mark: My Helper Methods
+    
+    @objc func updateTimer() {
+        if swiftCounter != 0 {
+            swiftCounter -= 1
+            print(swiftCounter)
+            timerLabel.text = String(swiftCounter)
+        } else {
+            if let selectedQuestion = selectedQuestion {
+                questionsAsked += 1
+                stopTimer()
+                setWrongAnswer(listOfButtons: buttons, questionIndex: selectedQuestion.answer)
+                questionsNumberAsked.append(selectedQuestion.questionNumber)
+                print(questionsNumberAsked)
+                loadNextRoundWithDelay(seconds: 2)
+            }
+            
+        }
+    }
+    
+    func stopTimer() {
+        swiftTimer.invalidate()
+    }
     
     func selectRandomNumber() {
         indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaQuestions.questionsList.count)
@@ -213,7 +296,7 @@ class ViewController: UIViewController {
     }
     
     func setCorrectAnswer(listOfButtons: [UIButton]?, correct: UIButton) {
-        
+        stopTimer()
         correctQuestions += 1
         questionField.text = "Correct!"
         questionField.textColor = UIColor.green
@@ -229,9 +312,12 @@ class ViewController: UIViewController {
         } else {
             print("The buttons didn't show up correctly")
         }
+        
+        playGameSound(SoundState.rightAnswer, isMuteOn: muteIsOn)
     }
     
     func setWrongAnswer(listOfButtons: [UIButton]?, questionIndex: Int) {
+        stopTimer()
         questionField.text = "Sorry, wrong answer!"
         questionField.textColor = UIColor.orange
         if var buttons = listOfButtons {
@@ -241,6 +327,7 @@ class ViewController: UIViewController {
                 button.backgroundColor = UIColor.darkGray
             }
         }
+        playGameSound(SoundState.wrongAnswer, isMuteOn: muteIsOn)
     }
 }
 
