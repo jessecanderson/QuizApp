@@ -88,9 +88,11 @@ class ViewController: UIViewController {
             } else {
                 // We make sure the button background and title color and text color are all correct here.
                 questionField.textColor = UIColor.white
-                for button in buttons! {
-                    button.backgroundColor = UIColor(red:0.05, green:0.47, blue:0.59, alpha:1.0)
-                    button.setTitleColor(UIColor.white, for: .normal)
+                if let buttons = buttons {
+                    for button in buttons {
+                        button.backgroundColor = UIColor(red:0.05, green:0.47, blue:0.59, alpha:1.0)
+                        button.setTitleColor(UIColor.white, for: .normal)
+                    }
                 }
                 
                 questionField.text = selectedQuestion.questionText
@@ -120,11 +122,11 @@ class ViewController: UIViewController {
     
     @objc func displayScore() {
         // Hide the answer buttons
-        button1.isHidden = true
-        button2.isHidden = true
-        button3.isHidden = true
-        button4.isHidden = true
-        
+        if let buttons = buttons {
+            for button in buttons {
+                button.isHidden = true
+            }
+        }
         // Display play again button
         playAgainButton.isHidden = false
         
@@ -213,13 +215,7 @@ class ViewController: UIViewController {
             self.nextRound()
         }
     }
-    
-    @objc func loadGameStartSound() {
-        let pathToSoundFile = Bundle.main.path(forResource: "GameSound", ofType: "wav")
-        let soundURL = URL(fileURLWithPath: pathToSoundFile!)
-        AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
-    }
-    
+
     func loadGameSounds() {
         for fileName in soundEffectNames {
             let pathToSoundFile = Bundle.main.path(forResource: fileName, ofType: "wav")
