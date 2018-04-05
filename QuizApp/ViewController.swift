@@ -12,7 +12,6 @@ import AudioToolbox
 
 class ViewController: UIViewController {
     
-    // let triviaQuestions = QuizQuestions()
     let triviaQuestionsTwo = TriviaQuesions()
     
     @objc let questionsPerRound = 4
