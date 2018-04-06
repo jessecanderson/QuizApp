@@ -21,7 +21,7 @@ class ViewController: UIViewController {
     @objc var indexOfSelectedQuestion: Int = 0
     @objc var questionsNumberAsked: [Int] = []
     
-    // Using this array of buttons to change the colors and text colors later
+    // Using this array of buttons to hide, change the colors, and update text colors later
     @objc var buttons: [UIButton]? = []
     
     // Game Sounds System ID's. Need to look into this more.
@@ -29,6 +29,7 @@ class ViewController: UIViewController {
     var wrongSound: SystemSoundID = 0
     var rightSound: SystemSoundID = 0
     // Single place to add sound file names, if they needed to be changed or updated
+    // I didn't implement this like I thought I would. Need to revisit to see if I can find a better way.
     let soundEffectNames: [String] = ["GameSound", "RightAnswer", "WrongAnswer"]
     // value to change if audio plays or not
     var muteIsOn: Bool = false
@@ -39,6 +40,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var timerLabel: UILabel!
     var selectedQuestion: TriviaDetails?
     
+    // Button and field IBOutlets
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet weak var button1: UIButton!
     @IBOutlet weak var button2: UIButton!
@@ -70,6 +72,7 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    // Main play function. Sets up the play, starts the timeer, and loads up the questions
     @objc func displayQuestion() {
         timerLabel.isHidden = false
         // Select a random number
@@ -95,10 +98,10 @@ class ViewController: UIViewController {
                     }
                 }
                 
+                // Set question text and starting the timer.
                 questionField.text = selectedQuestion.questionText
                 timerLabel.text = String(swiftCounter)
                 
-                //swiftTimer = Timer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
                 swiftTimer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
                 
                 // How many buttons do we need to assign? This can be expanded if needed, and working on moving the buttons to make it look nicer.
@@ -120,29 +123,14 @@ class ViewController: UIViewController {
         playAgainButton.isHidden = true
     }
     
-    @objc func displayScore() {
-        // Hide the answer buttons
-        if let buttons = buttons {
-            for button in buttons {
-                button.isHidden = true
-            }
-        }
-        // Display play again button
-        playAgainButton.isHidden = false
-        
-        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
-        
-    }
-    
     @IBAction func checkAnswer(_ sender: UIButton) {
         // Increment the questions asked counter
         questionsAsked += 1
 
-        // let selectedQuestion = triviaQuestions.questionsList[indexOfSelectedQuestion]
-
         if let selectedQuestion = selectedQuestion {
             let correctAnswer = (selectedQuestion.answer, sender.tag)
-
+            
+            // For simplicity here, I just set the button sender to the same value as what is in the array. If the two match up, it is correct, else it's not. Case statment looked nicer then a bunch of If/If Else/Else statments.
             switch correctAnswer {
             case (0,0):
                 setCorrectAnswer(listOfButtons: buttons, correct: button1)
@@ -160,18 +148,6 @@ class ViewController: UIViewController {
             print(questionsNumberAsked)
             loadNextRoundWithDelay(seconds: 2)
 
-        }
-    }
-    
-    @objc func nextRound() {
-        timerLabel.isHidden = true
-        stopTimer()
-        if questionsAsked == questionsPerRound {
-            // Game is over
-            displayScore()
-        } else {
-            // Continue game
-            displayQuestion()
         }
     }
     
@@ -194,16 +170,60 @@ class ViewController: UIViewController {
         }
     }
     
+    @objc func nextRound() {
+        timerLabel.isHidden = true
+        stopTimer()
+        if questionsAsked == questionsPerRound {
+            // Game is over
+            displayScore()
+        } else {
+            // Continue game
+            displayQuestion()
+        }
+    }
+    
+    @objc func displayScore() {
+        // Hide the answer buttons
+        if let buttons = buttons {
+            for button in buttons {
+                button.isHidden = true
+            }
+        }
+        // Display play again button
+        playAgainButton.isHidden = false
+        
+        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
+        
+    }
+    
     
     // MARK: Helper Methods
     
+    // I was doing this a few times, figured it would be easier to call the function to do it.
+    // Later, I will go back and make this both hide and unhide buttons as I do that a few times as well.
     func unhideButtons() {
-        button1.isHidden = false
-        button2.isHidden = false
-        button3.isHidden = false
-        button4.isHidden = false
+        if let buttons = buttons {
+            for button in buttons {
+                button.isHidden = false
+            }
+        }
     }
     
+    // Select a random number for the questions
+    func selectRandomNumber() {
+        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaQuestions.questionsList.count)
+    }
+    
+    // Keep track of which questions have been asked per round
+    func questionsWasAsked(_ selectedQuestion: TriviaDetails) -> Bool {
+        if questionsNumberAsked.contains(selectedQuestion.questionNumber) {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    // MARK: Audio Functions
     @objc func loadNextRoundWithDelay(seconds: Int) {
         // Converts a delay in seconds to nanoseconds as signed 64 bit integer
         let delay = Int64(NSEC_PER_SEC * UInt64(seconds))
@@ -254,9 +274,7 @@ class ViewController: UIViewController {
         }
     }
     
-    
-    // Mark: My Helper Methods
-    
+    // MARK: Timer Functions
     @objc func updateTimer() {
         if swiftCounter != 0 {
             swiftCounter -= 1
@@ -264,6 +282,8 @@ class ViewController: UIViewController {
             timerLabel.text = String(swiftCounter)
         } else {
             if let selectedQuestion = selectedQuestion {
+                // This could be cleaned up. Since some functionality is repeated here, I wonder if I could take it out of their functions and keep things more modular?
+                // Work on this more later. 
                 questionsAsked += 1
                 stopTimer()
                 setWrongAnswer(listOfButtons: buttons, questionIndex: selectedQuestion.answer)
@@ -279,18 +299,9 @@ class ViewController: UIViewController {
         swiftTimer.invalidate()
     }
     
-    func selectRandomNumber() {
-        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaQuestions.questionsList.count)
-    }
     
-    func questionsWasAsked(_ selectedQuestion: TriviaDetails) -> Bool {
-        if questionsNumberAsked.contains(selectedQuestion.questionNumber) {
-            return true
-        } else {
-            return false
-        }
-    }
-    
+    // MARK: Display Functions
+    // Set the display if the question was answered correctly
     func setCorrectAnswer(listOfButtons: [UIButton]?, correct: UIButton) {
         stopTimer()
         correctQuestions += 1
@@ -312,6 +323,7 @@ class ViewController: UIViewController {
         playGameSound(SoundState.rightAnswer, isMuteOn: muteIsOn)
     }
     
+    // Set the display if the question was answered wrong
     func setWrongAnswer(listOfButtons: [UIButton]?, questionIndex: Int) {
         stopTimer()
         questionField.text = "Sorry, wrong answer!"
