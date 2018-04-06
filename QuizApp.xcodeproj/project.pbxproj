@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6A5A76D82076903E0078CDDA /* RightAnswer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6A5A76D72076903E0078CDDA /* RightAnswer.wav */; };
+		6A5A76DA207690810078CDDA /* WrongAnswer.wav in Resources */ = {isa = PBXBuildFile; fileRef = 6A5A76D9207690810078CDDA /* WrongAnswer.wav */; };
 		6A9C24E3202FDAB6004A4063 /* QuizQuestions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A9C24E2202FDAB6004A4063 /* QuizQuestions.swift */; };
 		97093D3C1C913506001275BC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97093D3B1C913506001275BC /* AppDelegate.swift */; };
 		97093D3E1C913506001275BC /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97093D3D1C913506001275BC /* ViewController.swift */; };
@@ -17,6 +19,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6A5A76D72076903E0078CDDA /* RightAnswer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = RightAnswer.wav; sourceTree = "<group>"; };
+		6A5A76D9207690810078CDDA /* WrongAnswer.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = WrongAnswer.wav; sourceTree = "<group>"; };
 		6A9C24E2202FDAB6004A4063 /* QuizQuestions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizQuestions.swift; sourceTree = "<group>"; };
 		97093D381C913506001275BC /* QuizApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuizApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97093D3B1C913506001275BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -65,6 +69,8 @@
 				97093D441C913506001275BC /* LaunchScreen.storyboard */,
 				97093D471C913506001275BC /* Info.plist */,
 				97093D521C932116001275BC /* GameSound.wav */,
+				6A5A76D9207690810078CDDA /* WrongAnswer.wav */,
+				6A5A76D72076903E0078CDDA /* RightAnswer.wav */,
 				6A9C24E2202FDAB6004A4063 /* QuizQuestions.swift */,
 			);
 			path = QuizApp;
@@ -130,10 +136,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6A5A76DA207690810078CDDA /* WrongAnswer.wav in Resources */,
 				97093D531C932116001275BC /* GameSound.wav in Resources */,
 				97093D461C913506001275BC /* LaunchScreen.storyboard in Resources */,
 				97093D431C913506001275BC /* Assets.xcassets in Resources */,
 				97093D411C913506001275BC /* Main.storyboard in Resources */,
+				6A5A76D82076903E0078CDDA /* RightAnswer.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
